@@ -44,9 +44,45 @@ import {
         })
       })
   }
+
+  export function resendConfirmationCode(email) {
+    return new Promise((resolve, reject) => {
+        const cognitoUser = new CognitoUser({
+            Username: email,
+            Pool: userPool,
+          })
+
+        cognitoUser.resendConfirmationCode((err, result) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            resolve(result)
+        })
+    })
+  }
   
   export function signIn(email, password) {
-    // Sign in implementation
+    return new Promise((resolve, reject) => {
+        const authenticationDetails = new AuthenticationDetails({
+          Username: email,
+          Password: password,
+        })
+    
+        const cognitoUser = new CognitoUser({
+          Username: email,
+          Pool: userPool,
+        })
+    
+        cognitoUser.authenticateUser(authenticationDetails, {
+          onSuccess: (result) => {
+            resolve(result)
+          },
+          onFailure: (err) => {
+            reject(err)
+          },
+        })
+      })
   }
   
   export function forgotPassword(email) {
@@ -58,13 +94,55 @@ import {
   }
   
   export function signOut() {
-    // Sign out implementation
+    const cognitoUser = userPool.getCurrentUser()
+    if (cognitoUser) {
+      cognitoUser.signOut()
+    }
   }
   
-  export function getCurrentUser() {
-    // Get current user implementation
+  export async function getCurrentUser() {
+    return new Promise((resolve, reject) => {
+      const cognitoUser = userPool.getCurrentUser()
+  
+      if (!cognitoUser) {
+        reject(new Error("No user found"))
+        return
+      }
+  
+      cognitoUser.getSession((err, session) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        cognitoUser.getUserAttributes((err, attributes) => {
+          if (err) {
+            reject(err)
+            return
+          }
+          const userData = attributes.reduce((acc, attribute) => {
+            acc[attribute.Name] = attribute.Value
+            return acc
+          }, {})
+  
+          resolve({ ...userData, username: cognitoUser.username })
+        })
+      })
+    })
   }
   
   export function getSession() {
-    // Get session implementation
+    const cognitoUser = userPool.getCurrentUser()
+    return new Promise((resolve, reject) => {
+      if (!cognitoUser) {
+        reject(new Error("No user found"))
+        return
+      }
+      cognitoUser.getSession((err, session) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        resolve(session)
+      })
+    })
   }

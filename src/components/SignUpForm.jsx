@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { signUp } from "../auth.js"
+import ConfirmSignUpForm from "./ConfirmSignUpForm.jsx"
 
 const SignUpForm = () => {
   const [email, setEmail] = useState("")
@@ -14,17 +15,16 @@ const SignUpForm = () => {
     try {
       await signUp(email, password)
       setSuccess(true)
+      console.log("Signup succesful")
     } catch (err) {
       setError(err.message || "Signup failed")
+      console.log("Signup failed", err)
     }
   }
 
   if (success) {
     return (
-      <div>
-        <h2>SignUp successful!</h2>
-        <p>Please check your email for the confirmation code.</p>
-      </div>
+      <ConfirmSignUpForm email={email}/>
     )
   }
 
