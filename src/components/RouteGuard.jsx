@@ -3,13 +3,13 @@ import { Navigate } from "react-router-dom"
 import { AuthContext } from "./AuthContext"
 
 function RouteGuard({ children }) {
-  const { user, isLoading } = useContext(AuthContext)
+  const { isLoggedIn, isLoading } = useContext(AuthContext)
 
   if (isLoading) {
     return <></>
   }
 
-  if (!user) {
+  if (!isLoggedIn) {
     return <Navigate to="/login" />
   }
 
